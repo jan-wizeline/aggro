@@ -1,0 +1,10 @@
+.*
+!/.gitignore
+
+bin
+lib
+include
+__pycache__
+
+*.json
+*.csv
