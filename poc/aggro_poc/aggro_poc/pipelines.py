@@ -9,3 +9,10 @@
 class AggroPocPipeline:
     def process_item(self, item, spider):
         return item
+
+
+class JobItemPipeline:
+    def process_item(self, item, spider):
+        return item
+
+    

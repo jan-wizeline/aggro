@@ -1,23 +1,33 @@
 import scrapy
-
+from ..items import JobItem
 
 class GlassdoorSpider(scrapy.Spider):
     name = 'glassdoor'
     start_urls = [
-        # Thailand (1 Month)
-        'https://www.glassdoor.com/Job/thailand-software-engineer-jobs-SRCH_IL.0,8_IN229_KO9,26.htm?fromAge=30',
+        # 'https://www.glassdoor.com/Job/thailand-software-engineer-jobs-SRCH_IL.0,8_IN229_KO9,26.htm?fromAge=30', # Thailand (1 Month)
+        'https://www.glassdoor.com/Job/singapore-software-engineer-jobs-SRCH_IL.0,9_IC3235921_KO10,27.htm?fromAge=30', # Singapore (1 Month)
     ]
 
     def parse(self, response):
-        for jobs in response.css('li.jl'):
+
+        for job in response.css('li.jl'):
+            # Getting list of jobs from first page
+            '''
             yield {
                 # 'jobContainer': jobs.css('div.jobContainer').get(),
-                'employer': jobs.css('div.jobHeader > a > div::text').get().strip(),
-                'position': jobs.css('a::text').get().strip(),
-                'jobLink': jobs.css('a').attrib['href'].strip(),
-                'location': jobs.css('div.jobInfoItem > span::text').get().strip(),
+                'employer': jobs.css('div.jobHeader > a > div::text').get(),
+                'position': jobs.css('a::text').get(),
+                'jobLink': jobs.css('a').attrib['href'],
+                'location': jobs.css('div.jobInfoItem > span::text').get(),
             }
-        
+            '''
+
+            # Getting more info from details page
+            detail_page = job.css('a').attrib['href']
+            detail_url = response.urljoin(detail_page)
+            request = scrapy.Request(url=detail_url, callback=self.parse_details, cb_kwargs=dict(parent=job)) #passing parent as parameter
+            yield request
+            
         num_pages = int(response.css('#ResultsFooter > div::text').get()[-1])
         self.log(num_pages)
         if num_pages > 1:
@@ -27,19 +37,44 @@ class GlassdoorSpider(scrapy.Spider):
                 next_page = response.urljoin(nextlink)
                 yield scrapy.Request(next_page, callback=self.parse)
 
-        '''Some missing data'''
-        # for page in response.css('li.page'):
-        #     # self.log(page)
-        #     pagelink = page.css('a::attr(href)').get()
-        #     # self.log(pagelink)
-        #     if pagelink is not None:
-        #         next_page = response.urljoin(pagelink)
-        #         self.log(next_page)
-        #         yield scrapy.Request(next_page, callback=self.parse)
-          
+        ''' 
+        for page in response.css('li.page'):
+            # self.log(page)
+            pagelink = page.css('a::attr(href)').get()
+            # self.log(pagelink)
+            if pagelink is not None:
+                next_page = response.urljoin(pagelink)
+                self.log(next_page)
+                yield scrapy.Request(next_page, callback=self.parse)
+        '''
+
+    def parse_details(self, response, parent):
+        item = JobItem() 
+        
+        item['employer'] = parent.css('div.jobHeader > a > div::text').get(),
+        item['position'] = parent.css('a::text').get(),
+        item['jobLink'] = parent.css('a').attrib['href'],
+        item['location'] = parent.css('div.jobInfoItem > span::text').get(),
+        item['urgency'] = response.xpath('//*[@id="PrimaryModule"]/div/span[1]/text()').get(),
+        item['employerRating'] = response.xpath('//*[@id="JobView"]/div[1]/div[2]/div/div/div[2]/div[1]/div[1]/div[2]/div/div/div[1]/span/text()').get(),
+        item['details'] = response.css('li::text').getall(),
+
+        yield item
 
 
-''' DISCARDED CODE
+''' -------------------------------------------------------------------------------------------------------------------------
+
+yield {
+    'employer': parent.css('div.jobHeader > a > div::text').get(),
+    'position': parent.css('a::text').get(),
+    'jobLink': parent.css('a').attrib['href'],
+    'location': parent.css('div.jobInfoItem > span::text').get(),
+    'urgency': response.xpath('//*[@id="PrimaryModule"]/div/span[1]/text()').get(),
+    'employerRating': response.xpath('//*[@id="JobView"]/div[1]/div[2]/div/div/div[2]/div[1]/div[1]/div[2]/div/div/div[1]/span/text()').get(),
+    'details': response.css('li::text').getall(),
+}
+
+DISCARDED CODE
 
         self.log(response)
         next_page = response.css('#FooterPageNav > div > ul > li.next a::attr(href)').get()
