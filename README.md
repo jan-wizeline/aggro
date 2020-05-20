@@ -4,7 +4,7 @@
 ## File Name Conventions
 
 ### glassdoor Thailand
-    `date +%F`_glassdoor_TH
+    `date +%F`_glassdoor_TH.json
 
 
 # Scrapy Tips

@@ -7,4 +7,6 @@ include
 __pycache__
 
 *.json
+!/BQ_queries.sql
 *.csv
+*.log

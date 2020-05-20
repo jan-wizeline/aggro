@@ -64,10 +64,10 @@ DOWNLOAD_DELAY = 3
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-ITEM_PIPELINES = {
+# ITEM_PIPELINES = {
 #    'aggro_poc.pipelines.AggroPocPipeline': 1000,
-   'aggro_poc.pipelines.JobItemPipeline': 300,
-}
+#    'aggro_poc.pipelines.JobItemPipeline': 300,
+# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
